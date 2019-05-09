@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Matt Bragaw</Authors>
+    <Company>Bragaw Systems</Company>
+    <RepositoryUrl>https://github.com/mattbragaw/mqb</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mattbragaw/mqb</PackageProjectUrl>
+    <PackageLicenseUrl>MIT</PackageLicenseUrl>
+    <Copyright>Matt Bragaw 2019</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>
