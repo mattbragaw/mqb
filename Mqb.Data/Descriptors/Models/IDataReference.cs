@@ -4,12 +4,18 @@ using System.Text;
 
 namespace Mqb.Descriptors.Models
 {
-    public interface IDataReference : IDataRowChild, 
-        IHasDataRelationType_R
+    public interface IDataReference : IDataRowChild,
+        IHasDataRowForeign_R,
+        IHasDataRowIdForeign_R,
+        IHasDataRelationId_R,
+        IHasDataRelation_R
     {
     }
     public interface IDataReferenceMutable : IDataRowChildMutable,
-        IHasDataRelationType_R
+        IHasDataRowForeign_RW,
+        IHasDataRowIdForeign_RW,
+        IHasDataRelationId_RW,
+        IHasDataRelation_RW
     {
     }
 }

@@ -4,12 +4,14 @@ using System.Text;
 
 namespace Mqb.Descriptors.Models
 {
-    public interface IOrgChild : IBaseNamed, 
+    public interface IOrgChild : IBaseNamed,
+        IHasSystem_R,
         IHasParentOrgId_R, 
         IHasParentOrg_R
     {
     }
-    public interface IOrgChildMutable : IBaseNamedMutable, 
+    public interface IOrgChildMutable : IBaseNamedMutable,
+        IHasSystem_RW, 
         IHasParentOrgId_RW, 
         IHasParentOrg_RW
     {

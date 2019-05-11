@@ -6,10 +6,10 @@ namespace Mqb.Descriptors
 {
     public interface IHasDataRowId_R
     {
-        string DataRowId { get; }
+        string RowId { get; }
     }
     public interface IHasDataRowId_RW
     {
-        string DataRowId { get; set; }
+        string RowId { get; set; }
     }
 }

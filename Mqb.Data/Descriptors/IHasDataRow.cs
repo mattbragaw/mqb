@@ -7,10 +7,10 @@ namespace Mqb.Descriptors
 {
     public interface IHasDataRow_R
     {
-        IDataRow DataRow { get; }
+        IDataRow Row { get; }
     }
     public interface IHasDataRow_RW
     {
-        IDataRowMutable DataRow { get; set; }
+        IDataRowMutable Row { get; set; }
     }
 }

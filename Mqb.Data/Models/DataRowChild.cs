@@ -7,21 +7,21 @@ namespace Mqb.Models
 {
     public abstract class DataRowChild : Base, IDataRowChild
     {
-        public DataRowChild(string id, string dataRowId) : this(id, dataRowId, null)
+        public DataRowChild(string id, string rowId) : this(id, rowId, null)
         {
         }
-        public DataRowChild(string id, string dataRowId, IDataRow dataRow) : base(id)
+        public DataRowChild(string id, string rowId, IDataRow row) : base(id)
         {
-            DataRowId = dataRowId;
-            DataRow = dataRow;
+            RowId = rowId;
+            Row = row;
         }
 
-        public string DataRowId { get; }
-        public IDataRow DataRow { get; }
+        public string RowId { get; }
+        public IDataRow Row { get; }
     }
     public abstract class DataRowChildMutable : BaseMutable, IDataRowChildMutable
     {
-        public virtual string DataRowId { get; set; }
-        public virtual IDataRowMutable DataRow { get; set; }
+        public virtual string RowId { get; set; }
+        public virtual IDataRowMutable Row { get; set; }
     }
 }
