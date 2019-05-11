@@ -27,7 +27,7 @@ namespace Mqb.Akka
             Parent = parent;
 
             // if no parent, we assume a top-level actor
-            var parentPath = parent != null ? parent.Path : string.Format("/{0}", Constants.USER_GUARDIAN);
+            var parentPath = parent != null ? parent.Path : string.Format("/{0}", ConstantsAkka.USER_GUARDIAN);
 
             Path = string.Format("{0}/{1}", parentPath, Name);
         }

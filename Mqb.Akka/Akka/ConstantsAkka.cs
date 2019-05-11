@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mqb.Akka
 {
-    public static class Constants
+    public static class ConstantsAkka
     {
         public const string SYSTEM_GUARDIAN = "system";
         public const string USER_GUARDIAN = "user";

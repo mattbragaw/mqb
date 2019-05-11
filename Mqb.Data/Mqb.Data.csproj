@@ -3,21 +3,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Mqb</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.3</Version>
     <Authors>Matt Bragaw</Authors>
     <Company>Bragaw Systems</Company>
     <Copyright>Matt Bragaw 2019</Copyright>
+    <PackageLicenseUrl>https://github.com/mattbragaw/mqb/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/mattbragaw/mqb</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mattbragaw/mqb</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
-    <PackageLicenseUrl>https://github.com/mattbragaw/mqb/blob/master/LICENSE</PackageLicenseUrl>
-    <Version>1.0.3</Version>
-    <PackageProjectUrl>https://github.com/mattbragaw/mqb</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Akka.Persistence" Version="1.3.13" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Mqb" Version="1.0.3" />
   </ItemGroup>
 

@@ -9,7 +9,7 @@ namespace Mqb.Akka.Actors
     {
         #region Static Methods
 
-        public static string GetUniqueName() => Path.GetUniqueName(Constants.REQUEST);
+        public static string GetUniqueName() => Path.GetUniqueName(ConstantsAkka.REQUEST);
 
         #endregion
 
