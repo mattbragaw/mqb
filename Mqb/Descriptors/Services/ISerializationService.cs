@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mqb.Services
+namespace Mqb.Descriptors.Services
 {
     public interface ISerializationService : IService
     {
