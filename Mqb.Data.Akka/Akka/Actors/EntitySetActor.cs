@@ -9,15 +9,17 @@ namespace Mqb.Akka.Actors
         public class EntitySetState : PersistentState
         {
             public string Id { get; set; }
+            public Type Type { get; set; }
             public HashSet<string> IdsActive { get; set; } = new HashSet<string>();
             public HashSet<string> IdsInactive { get; set; } = new HashSet<string>();
             public HashSet<string> IdsDeletedActive { get; set; } = new HashSet<string>();
             public HashSet<string> IdsDeletedInactive { get; set; } = new HashSet<string>();
         }
 
-        public EntitySetActor(string id)
+        public EntitySetActor(string id, Type type)
         {
             State.Id = id;
+            State.Type = type;
             PersistenceId = string.Format("{0}-{1}", ConstantsDataAkka.ENTITY_SET, id);
         }
 
