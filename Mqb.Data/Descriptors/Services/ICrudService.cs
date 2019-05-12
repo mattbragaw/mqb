@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Mqb.Descriptors.Services
 {
-    public interface ICrudService<T>
+    public interface ICrudService<T> : IService
     {
         Task<bool> CreateAsync(T model);
         Task<IEnumerable<T>> GetAllAsync();
