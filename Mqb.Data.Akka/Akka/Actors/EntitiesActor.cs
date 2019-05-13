@@ -57,12 +57,16 @@ namespace Mqb.Akka.Actors
 
         #endregion
 
+        #region State Definition
+
         public class EntitiesState : PersistentState
         {
             public Dictionary<Type, string> EntitySets { get; set; } = new Dictionary<Type, string>();
             public Dictionary<string, IActorRef> EntitySetRefs { get; set; } = new Dictionary<string, IActorRef>();
         }
 
+        #endregion
+        
         public EntitiesActor()
         {
             PersistenceId = ConstantsDataAkka.ENTITIES;
