@@ -64,6 +64,8 @@ namespace Mqb.Akka.Actors
             public string Id { get; }
             public object Model { get; }
         }
+        public class Update_IdNotFound : Nak { }
+        public class Update_IdDeleted : Nak { }
         public class DeleteAll : Cmd { }
         public class DeleteById : Cmd
         {
@@ -359,16 +361,29 @@ namespace Mqb.Akka.Actors
         }
         private void GetAllCmd(GetAll cmd)
         {
-            // todo: master aggregator
-            var masterAgg = Context.ActorOf(Props.Create(() => new AggregateActor()), AggregateActor.GetUniqueName());
+            // aggregator
+            var agg = Context.ActorOf(Props.Create(() => new AggregateActor()), AggregateActor.GetUniqueName());
+            // active ids
+            agg.Tell(new AggregateActor.GetAll(Sender, cmd, State.IdsActive.Count, State.Type));
+            foreach (var activeId in State.IdsActive)
+            {
+                var child = Context.Child(activeId);
+                if (child != ActorRefs.Nobody)
+                    agg.Tell(new AggregateActor.GetAllAdd(child, new EntityActor.Get()));
+                else
+                    agg.Tell(new AggregateActor.ReduceTargetCount());
+            }
+            // inactive ids
+            agg.Tell(new AggregateActor.GetAll(Sender, cmd, State.IdsInactive.Count, State.Type));
+            foreach (var inactiveId in State.IdsInactive)
+            {
+                var child = Context.Child(inactiveId);
+                if (child == ActorRefs.Nobody)
+                    child = CreateEntity(inactiveId);
 
-            // todo: get all active records
-            var activeAgg = Context.ActorOf(Props.Create(() => new AggregateActor()), AggregateActor.GetUniqueName());
-
-            // todo: get all inactive records
-            var inactiveAgg = Context.ActorOf(Props.Create(() => new AggregateActor()), AggregateActor.GetUniqueName());
-            
-            // todo: deactivate activated inactive records - ideally as requested
+                // get inactive data and deactivate child once it replies
+                agg.Tell(new AggregateActor.GetAllAdd(child, new EntityActor.DeactivateAfter<EntityActor.Get>(new EntityActor.Get())));
+            }
         }
         private void GetByIdCmd(GetById cmd)
         {
@@ -376,19 +391,15 @@ namespace Mqb.Akka.Actors
             if (!State.IdNotDeleted(cmd.Id))
             {
                 if (State.IdDeleted(cmd.Id))
-                {
                     Sender.Tell(new GetById_IdDeleted());
-                }
                 else
-                {
                     Sender.Tell(new GetById_IdNotFound());
-                }
             }
 
             // if inactive, activate
             if (State.IdsInactive.Contains(cmd.Id))
             {
-                var childActor = Context.ActorOf(Props.Create(() => new EntityActor(cmd.Id, State.Type)), cmd.Id);
+                var childActor = CreateEntity(cmd.Id);
                 State.ActivateId(cmd.Id);
             }
 
@@ -399,16 +410,54 @@ namespace Mqb.Akka.Actors
         }
         private void GetIfCmd(GetIf cmd)
         {
-            // todo: search active records
-            // todo: search inactive records
-            // todo: deactivate activated inactive records
+            // aggregator
+            var agg = Context.ActorOf(Props.Create(() => new AggregateActor()), AggregateActor.GetUniqueName());
+            // active ids
+            agg.Tell(new AggregateActor.GetIf(Sender, cmd, State.IdsActive.Count, State.Type, typeof(EntityActor.GetIf_NoMatch)));
+            foreach (var activeId in State.IdsActive)
+            {
+                var child = Context.Child(activeId);
+                if (child != ActorRefs.Nobody)
+                    agg.Tell(new AggregateActor.GetIfAdd(child, new EntityActor.GetIf(cmd.Type, cmd.Predicate)));
+                else
+                    agg.Tell(new AggregateActor.ReduceTargetCount());
+            }
+            // inactive ids
+            agg.Tell(new AggregateActor.GetIf(Sender, cmd, State.IdsInactive.Count, State.Type, typeof(EntityActor.GetIf_NoMatch)));
+            foreach (var inactiveId in State.IdsInactive)
+            {
+                var child = Context.Child(inactiveId);
+                if (child == ActorRefs.Nobody)
+                    child = CreateEntity(inactiveId);
+
+                // get inactive data and deactivate child once it replies
+                agg.Tell(new AggregateActor.GetIfAdd(child, new EntityActor.DeactivateAfter<EntityActor.GetIf>(new EntityActor.GetIf(cmd.Type, cmd.Predicate))));
+            }
         }
         private void UpdateCmd(Update cmd)
         {
-            // todo: ensure id exists
-            // todo: activate if needed
-            // todo: update data
-            // todo: leave active
+            // verify id valid
+            if (!State.IdNotDeleted(cmd.Id))
+            {
+                if (State.IdDeleted(cmd.Id))
+                    Sender.Tell(new Update_IdDeleted());
+                else
+                    Sender.Tell(new Update_IdNotFound());
+            }
+
+            // if inactive, activate
+            IActorRef childActor = Context.Child(cmd.Id);
+            if (childActor == ActorRefs.Nobody)
+                if (State.IdsInactive.Contains(cmd.Id))
+                {
+                    childActor = CreateEntity(cmd.Id);
+                    State.ActivateId(cmd.Id);
+                }
+            
+            // update data
+            childActor.Tell(new EntityActor.Update(cmd.Model), Sender);
+
+            // leave active
         }
 
         private void DeleteAllCmd(DeleteAll cmd)
@@ -513,7 +562,10 @@ namespace Mqb.Akka.Actors
 
         #region Utility Methods
 
-
+        private IActorRef CreateEntity(string id)
+        {
+            return Context.ActorOf(Props.Create(() => new EntityActor(id, State.Type)), id);
+        }
 
         #endregion
     }
