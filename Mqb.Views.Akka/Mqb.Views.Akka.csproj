@@ -10,20 +10,7 @@
     <PackageLicenseUrl>https://github.com/mattbragaw/mqb/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mattbragaw/mqb</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mattbragaw/mqb</RepositoryUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <RepositoryType>Github</RepositoryType>
+    <RepositoryType>Git</RepositoryType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Akka.Persistence" Version="1.3.13" />
-    <PackageReference Include="Mqb" Version="2.0.0" />
-    <PackageReference Include="Mqb.Akka" Version="2.0.1" />
-    <PackageReference Include="Mqb.Data" Version="2.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Descriptors\" />
-  </ItemGroup>
 
 </Project>

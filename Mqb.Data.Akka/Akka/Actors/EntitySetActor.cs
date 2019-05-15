@@ -76,6 +76,17 @@ namespace Mqb.Akka.Actors
 
             public string Id { get; }
         }
+        public class DeleteById_IdNotFound : Nak { }
+        public class DeleteById_IdAlreadyDeleted : Nak { }
+        public class DeleteById_Success : Ack
+        {
+            public DeleteById_Success(string id)
+            {
+                Id = id;
+            }
+
+            public string Id { get; }
+        }
         public class DeleteIf
         {
             public DeleteIf(Type type, Predicate<object> predicate)
@@ -307,7 +318,7 @@ namespace Mqb.Akka.Actors
 
             // handle CRUD commands
             Command<Create>(cmd => CreateCmd(cmd));
-            Command<RequestActor.RequestCompleted>(cmd => CreateCompletedCmd(cmd), cmd => cmd.Request.RequestorMessage.GetType() == typeof(Create));
+            //Command<RequestActor.RequestCompleted>(cmd => CreateCompletedCmd(cmd), cmd => cmd.Request.RequestorMessage.GetType() == typeof(Create));
             Command<GetAll>(cmd => GetAllCmd(cmd));
             Command<GetById>(cmd => GetByIdCmd(cmd));
             Command<GetIf>(cmd => GetIfCmd(cmd));
@@ -323,13 +334,6 @@ namespace Mqb.Akka.Actors
             Command<DeactivateAll>(cmd => DeactivateAllCmd(cmd));
             Command<DeactivatedId>(cmd => DeactivatedIdCmd(cmd));
             Command<DeactivateIf>(cmd => DeactivateIfCmd(cmd));
-        }
-
-        private void CreateCompletedCmd(RequestActor.RequestCompleted cmd)
-        {
-            Create originalCmd = (Create)cmd.Request.RequestorMessage;
-            if (cmd.Result is Create_Success)
-                cmd.Request.Requestor.Tell(new Create_Success(originalCmd.Id));
         }
 
         #region Properties
@@ -355,10 +359,17 @@ namespace Mqb.Akka.Actors
             {
                 CreatedIdEvnt(result);
                 IActorRef entityActor = Context.ActorOf(Props.Create(() => new EntityActor(cmd.Id, State.Type)), cmd.Id);
-                IActorRef requestActor = Context.ActorOf(Props.Create(() => new RequestActor()), RequestActor.GetUniqueName());
-                requestActor.Tell(new RequestActor.Request(Sender, cmd, entityActor, new EntityActor.Create(cmd.Model)));
+                entityActor.Tell(new EntityActor.Create(cmd.Model), Sender);
+                //IActorRef requestActor = Context.ActorOf(Props.Create(() => new RequestActor()), RequestActor.GetUniqueName());
+                //requestActor.Tell(new RequestActor.Request(Sender, cmd, entityActor, new EntityActor.Create(cmd.Model)));
             });
         }
+        //private void CreateCompletedCmd(RequestActor.RequestCompleted cmd)
+        //{
+        //    Create originalCmd = (Create)cmd.Request.RequestorMessage;
+        //    if (cmd.Result is EntityActor.Create_Success)
+        //        cmd.Request.Requestor.Tell(new Create_Success(originalCmd.Id));
+        //}
         private void GetAllCmd(GetAll cmd)
         {
             // aggregator
@@ -394,6 +405,8 @@ namespace Mqb.Akka.Actors
                     Sender.Tell(new GetById_IdDeleted());
                 else
                     Sender.Tell(new GetById_IdNotFound());
+
+                return;
             }
 
             // if inactive, activate
@@ -443,41 +456,79 @@ namespace Mqb.Akka.Actors
                     Sender.Tell(new Update_IdDeleted());
                 else
                     Sender.Tell(new Update_IdNotFound());
+
+                return;
+            }
+
+            IActorRef entityActor = ActorRefs.Nobody;
+
+            if (State.IdsActive.Contains(cmd.Id))
+            {
+                entityActor = Context.Child(cmd.Id);
+                if (entityActor == ActorRefs.Nobody)
+                    entityActor = CreateEntity(cmd.Id);
             }
 
             // if inactive, activate
-            IActorRef childActor = Context.Child(cmd.Id);
-            if (childActor == ActorRefs.Nobody)
-                if (State.IdsInactive.Contains(cmd.Id))
-                {
-                    childActor = CreateEntity(cmd.Id);
-                    State.ActivateId(cmd.Id);
-                }
-            
+            if (entityActor == ActorRefs.Nobody && State.IdsInactive.Contains(cmd.Id))
+            {
+                entityActor = CreateEntity(cmd.Id);
+                State.ActivateId(cmd.Id);
+            }
+
             // update data
-            childActor.Tell(new EntityActor.Update(cmd.Model), Sender);
+            entityActor.Tell(new EntityActor.Update(cmd.Model), Sender);
 
             // leave active
         }
 
         private void DeleteAllCmd(DeleteAll cmd)
         {
-            // todo: delete all active records
-            // todo: delete all inactive records
+            // todo: implement
         }
 
         private void DeleteByIdCmd(DeleteById cmd)
         {
-            // todo: ensure id exists
-            // todo: activate if needed
-            // todo: delete id
-        }
+            
+            // verify id valid
+            if (!State.IdNotDeleted(cmd.Id))
+            {
+                if (State.IdDeleted(cmd.Id))
+                    Sender.Tell(new DeleteById_IdAlreadyDeleted());
+                else
+                    Sender.Tell(new DeleteById_IdNotFound());
 
+                return;
+            }
+
+            IActorRef entityActor = ActorRefs.Nobody;
+
+            if (State.IdsActive.Contains(cmd.Id))
+            {
+                entityActor = Context.Child(cmd.Id);
+                if (entityActor == ActorRefs.Nobody)
+                    entityActor = CreateEntity(cmd.Id);
+            }
+
+            // if inactive, activate
+            if (entityActor == ActorRefs.Nobody && State.IdsInactive.Contains(cmd.Id))
+            {
+                entityActor = CreateEntity(cmd.Id);
+                State.ActivateId(cmd.Id);
+            }
+
+            // delete record
+            var deletedId = new DeletedId(cmd.Id);
+            PersistAndTrack(deletedId, result =>
+            {
+                DeletedIdEvnt(result);
+                IActorRef requestActor = Context.ActorOf(Props.Create(() => new RequestActor()), RequestActor.GetUniqueName());
+                entityActor.Tell(new EntityActor.Delete(), Sender);
+            });
+        }
         private void DeleteIfCmd(DeleteIf cmd)
         {
-            // todo: search all active records deleting if found
-            // todo: search all inactive records deleting if found
-            // todo: deactive inactive records that were activated, but not deleted
+            // todo: implement
         }
 
         #endregion

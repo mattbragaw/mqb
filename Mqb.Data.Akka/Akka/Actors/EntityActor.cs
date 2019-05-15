@@ -195,18 +195,18 @@ namespace Mqb.Akka.Actors
             Recover<Undeleted>(evnt => UndeletedEvnt(evnt));
 
             // handle commands
-            Command<Create>(cmd => CreateCmd(cmd), cmd => Context.Parent == Sender);
+            Command<Create>(cmd => CreateCmd(cmd));
             Command<Get>(cmd => GetCmd(cmd));
-            Command<DeactivateAfter<Get>>(cmd => GetCmd(cmd.Cmd, true), cmd => Context.Parent == Sender);
+            Command<DeactivateAfter<Get>>(cmd => GetCmd(cmd.Cmd, true));
             Command<GetIf>(cmd => GetIfCmd(cmd));
-            Command<DeactivateAfter<GetIf>>(cmd => GetIfCmd(cmd.Cmd, true), cmd => Context.Parent == Sender);
+            Command<DeactivateAfter<GetIf>>(cmd => GetIfCmd(cmd.Cmd, true));
             Command<Update>(cmd => UpdateCmd(cmd));
             Command<Delete>(cmd => DeleteCmd(cmd));
             Command<DeleteIf>(cmd => DeleteIfCmd(cmd));
-            Command<DeactivateAfter<DeleteIf>>(cmd => DeleteIfCmd(cmd.Cmd, true), cmd => Context.Parent == Sender);
+            Command<DeactivateAfter<DeleteIf>>(cmd => DeleteIfCmd(cmd.Cmd, true));
             Command<Undelete>(cmd => UndeleteCmd(cmd));
             Command<UndeleteIf>(cmd => UndeleteIfCmd(cmd));
-            Command<DeactivateAfter<UndeleteIf>>(cmd => UndeleteIfCmd(cmd.Cmd, true), cmd => Context.Parent == Sender);
+            Command<DeactivateAfter<UndeleteIf>>(cmd => UndeleteIfCmd(cmd.Cmd, true));
             Command<Deactivate>(cmd => DeactivateCmd(cmd));
 
             // set and handle receive timeout
