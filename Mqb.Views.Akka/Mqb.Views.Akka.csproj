@@ -11,6 +11,13 @@
     <PackageProjectUrl>https://github.com/mattbragaw/mqb</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mattbragaw/mqb</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mqb" Version="2.0.1" />
+    <PackageReference Include="Mqb.Akka" Version="2.0.2" />
+    <PackageReference Include="Mqb.Views" Version="2.0.0" />
+  </ItemGroup>
 
 </Project>

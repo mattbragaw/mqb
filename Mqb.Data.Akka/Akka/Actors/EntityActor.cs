@@ -193,7 +193,7 @@ namespace Mqb.Akka.Actors
                 PersistAndTrack(deleted, result =>
                 {
                     DeletedEvnt(result);
-                    Sender.Tell(new EntityTypeActor.DeleteIf_ItemSuccess(), Context.Parent);
+                    Sender.Tell(new EntityTypeActor.DeleteIf_ItemSuccess(State.Id), Context.Parent);
                 });
             }
             else
