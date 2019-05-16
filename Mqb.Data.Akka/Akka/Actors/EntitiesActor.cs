@@ -9,18 +9,18 @@ namespace Mqb.Akka.Actors
     {
         #region Command Definitions
 
-        public class GetEntitySet : Cmd
+        public class GetEntityType : Cmd
         {
-            public GetEntitySet(Type type)
+            public GetEntityType(Type type)
             {
                 Type = type;
             }
 
             public Type Type { get; }
         }
-        public class EntitySet : Doc
+        public class EntityType : Doc
         {
-            public EntitySet(string id, Type type)
+            public EntityType(string id, Type type)
             {
                 Id = id;
                 Type = type;
@@ -29,15 +29,15 @@ namespace Mqb.Akka.Actors
             public string Id { get; }
             public Type Type { get; }
         }
-        public class EntitySetResult : Evnt
+        public class EntityTypeResult : Evnt
         {
-            public EntitySetResult(EntitySet entitySet, IActorRef actorRef)
+            public EntityTypeResult(EntityType entityType, IActorRef actorRef)
             {
-                EntitySet = entitySet;
+                EntityType = entityType;
                 ActorRef = actorRef;
             }
 
-            public EntitySet EntitySet { get; }
+            public EntityType EntityType { get; }
             public IActorRef ActorRef { get; }
         }
 
@@ -45,14 +45,14 @@ namespace Mqb.Akka.Actors
 
         #region Events Definitions
 
-        public class EntitySetCreated : Evnt
+        public class EntityTypeCreated : Evnt
         {
-            public EntitySetCreated(EntitySet entitySet)
+            public EntityTypeCreated(EntityType entityType)
             {
-                EntitySet = entitySet;
+                EntityType = entityType;
             }
 
-            public EntitySet EntitySet { get; }
+            public EntityType EntityType { get; }
         }
 
         #endregion
@@ -61,8 +61,8 @@ namespace Mqb.Akka.Actors
 
         public class EntitiesState : PersistentState
         {
-            public Dictionary<Type, string> EntitySets { get; set; } = new Dictionary<Type, string>();
-            public Dictionary<string, IActorRef> EntitySetRefs { get; set; } = new Dictionary<string, IActorRef>();
+            public Dictionary<Type, string> EntityTypes { get; set; } = new Dictionary<Type, string>();
+            public Dictionary<string, IActorRef> EntityTypeRefs { get; set; } = new Dictionary<string, IActorRef>();
         }
 
         #endregion
@@ -71,9 +71,9 @@ namespace Mqb.Akka.Actors
         {
             PersistenceId = ConstantsDataAkka.ENTITIES;
 
-            Recover<EntitySetCreated>(evnt => EntitySetCreatedEvnt(evnt));
+            Recover<EntityTypeCreated>(evnt => EntityTypeCreatedEvnt(evnt));
 
-            Command<GetEntitySet>(cmd => GetEntitySetCmd(cmd));
+            Command<GetEntityType>(cmd => GetEntityTypeCmd(cmd));
         }
         
         #region Properties
@@ -84,23 +84,23 @@ namespace Mqb.Akka.Actors
 
         #region Command Handlers
 
-        private void GetEntitySetCmd(GetEntitySet cmd)
+        private void GetEntityTypeCmd(GetEntityType cmd)
         {
-            EntitySet entitySet;
+            EntityType entityType;
 
-            if (State.EntitySets.ContainsKey(cmd.Type))
+            if (State.EntityTypes.ContainsKey(cmd.Type))
             {
-                entitySet = new EntitySet(State.EntitySets[cmd.Type], cmd.Type);
-                SendEntitySetResult(entitySet);
+                entityType = new EntityType(State.EntityTypes[cmd.Type], cmd.Type);
+                SendEntityTypeResult(entityType);
             }   
             else
             {
-                entitySet = new EntitySet(Unique.String(), cmd.Type);
-                EntitySetCreated evnt = new EntitySetCreated(entitySet);
+                entityType = new EntityType(Unique.String(), cmd.Type);
+                EntityTypeCreated evnt = new EntityTypeCreated(entityType);
                 PersistAndTrack(evnt, result =>
                 {
-                    EntitySetCreatedEvnt(evnt);
-                    SendEntitySetResult(entitySet);
+                    EntityTypeCreatedEvnt(evnt);
+                    SendEntityTypeResult(entityType);
                 });
             }
         }
@@ -109,26 +109,26 @@ namespace Mqb.Akka.Actors
 
         #region Event Handlers
 
-        private void EntitySetCreatedEvnt(EntitySetCreated evnt)
+        private void EntityTypeCreatedEvnt(EntityTypeCreated evnt)
         {
-            State.EntitySets.Add(evnt.EntitySet.Type, evnt.EntitySet.Id);
+            State.EntityTypes.Add(evnt.EntityType.Type, evnt.EntityType.Id);
         }
 
         #endregion
 
         #region Utility Methods
 
-        private void SendEntitySetResult(EntitySet entitySet)
+        private void SendEntityTypeResult(EntityType entityType)
         {
-            EntitySetResult result = null;
+            EntityTypeResult result = null;
 
-            if (State.EntitySetRefs.ContainsKey(entitySet.Id))
-                result = new EntitySetResult(entitySet, State.EntitySetRefs[entitySet.Id]);
+            if (State.EntityTypeRefs.ContainsKey(entityType.Id))
+                result = new EntityTypeResult(entityType, State.EntityTypeRefs[entityType.Id]);
             else
             {
-                IActorRef newChild = Context.ActorOf(Props.Create(() => new EntitySetActor(entitySet.Id, entitySet.Type)), entitySet.Id);
-                State.EntitySetRefs.Add(entitySet.Id, newChild);
-                result = new EntitySetResult(entitySet, newChild);
+                IActorRef newChild = Context.ActorOf(Props.Create(() => new EntityTypeActor(entityType.Id, entityType.Type)), entityType.Id);
+                State.EntityTypeRefs.Add(entityType.Id, newChild);
+                result = new EntityTypeResult(entityType, newChild);
             }
 
             Sender.Tell(result);

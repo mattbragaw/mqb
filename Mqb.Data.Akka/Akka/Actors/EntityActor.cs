@@ -9,124 +9,6 @@ namespace Mqb.Akka.Actors
     {
         #region Commmand Definitions
 
-        public class Create : Cmd
-        {
-            public Create(object model)
-            {
-                Model = model;
-            }
-
-            public object Model { get; }
-        }
-        public class Create_InvalidType : Nak { }
-        public class Create_Success : Ack
-        {
-            public Create_Success(string id)
-            {
-                Id = id;
-            }
-
-            public string Id { get; }
-        }
-        public class Get : Cmd { }
-        public class GetIf : Cmd
-        {
-            public GetIf(Type type, Predicate<object> predicate)
-            {
-                Type = type;
-                Predicate = predicate;
-            }
-
-            public Type Type { get; }
-            public Predicate<object> Predicate { get; }
-        }
-        public class GetIf_InvalidType : Nak { }
-        public class GetIf_NoMatch : Ack { }
-        public class Update : Cmd
-        {
-            public Update(object model)
-            {
-                Model = model;
-            }
-
-            public object Model { get; }
-        }
-        public class Update_InvalidType : Nak { }
-        public class Update_Success : Ack
-        {
-            public Update_Success(string id)
-            {
-                Id = id;
-            }
-
-            public string Id { get; }
-        }
-        public class Delete : Cmd { }
-        public class Delete_AlreadyDeleted : Nak { }
-        public class Delete_Success : Ack
-        {
-            public Delete_Success(string id)
-            {
-                Id = id;
-            }
-
-            public string Id { get; }
-        }
-        public class DeleteIf : Cmd
-        {
-            public DeleteIf(Type type, Predicate<object> predicate)
-            {
-                Type = type;
-                Predicate = predicate;
-            }
-
-            public Type Type { get; }
-            public Predicate<object> Predicate { get; }
-        }
-        public class DeleteIf_InvalidType : Nak { }
-        public class DeleteIf_NoMatch : Ack { }
-        public class DeleteIf_Success : Ack
-        {
-            public DeleteIf_Success(string id)
-            {
-                Id = id;
-            }
-
-            public string Id { get; }
-        }
-        public class Undelete : Cmd { }
-        public class Undelete_NotDeleted : Nak { }
-        public class Undelete_Success : Ack
-        {
-            public Undelete_Success(string id)
-            {
-                Id = id;
-            }
-
-            public string Id { get; }
-        }
-        public class UndeleteIf : Cmd
-        {
-            public UndeleteIf(Type type, Predicate<object> predicate)
-            {
-                Type = type;
-                Predicate = predicate;
-            }
-
-            public Type Type { get; }
-            public Predicate<object> Predicate { get; }
-        }
-        public class UndeleteIf_InvalidType : Nak { }
-        public class UndeleteIf_NoMatch : Ack { }
-        public class UndeleteIf_Success : Ack
-        {
-            public UndeleteIf_Success(string id)
-            {
-                Id = id;
-            }
-
-            public string Id { get; }
-        }
         public class Deactivate : Cmd { }
         public class DeactivateAfter<T> : Cmd
         {
@@ -195,18 +77,18 @@ namespace Mqb.Akka.Actors
             Recover<Undeleted>(evnt => UndeletedEvnt(evnt));
 
             // handle commands
-            Command<Create>(cmd => CreateCmd(cmd));
-            Command<Get>(cmd => GetCmd(cmd));
-            Command<DeactivateAfter<Get>>(cmd => GetCmd(cmd.Cmd, true));
-            Command<GetIf>(cmd => GetIfCmd(cmd));
-            Command<DeactivateAfter<GetIf>>(cmd => GetIfCmd(cmd.Cmd, true));
-            Command<Update>(cmd => UpdateCmd(cmd));
-            Command<Delete>(cmd => DeleteCmd(cmd));
-            Command<DeleteIf>(cmd => DeleteIfCmd(cmd));
-            Command<DeactivateAfter<DeleteIf>>(cmd => DeleteIfCmd(cmd.Cmd, true));
-            Command<Undelete>(cmd => UndeleteCmd(cmd));
-            Command<UndeleteIf>(cmd => UndeleteIfCmd(cmd));
-            Command<DeactivateAfter<UndeleteIf>>(cmd => UndeleteIfCmd(cmd.Cmd, true));
+            Command<EntityTypeActor.Create>(cmd => CreateCmd(cmd));
+            Command<EntityTypeActor.GetById>(cmd => GetByIdCmd(cmd));
+            Command<DeactivateAfter<EntityTypeActor.GetById>>(cmd => GetByIdCmd(cmd.Cmd, true));
+            Command<EntityTypeActor.GetIf>(cmd => GetIfCmd(cmd));
+            Command<DeactivateAfter<EntityTypeActor.GetIf>>(cmd => GetIfCmd(cmd.Cmd, true));
+            Command<EntityTypeActor.Update>(cmd => UpdateCmd(cmd));
+            Command<EntityTypeActor.DeleteById>(cmd => DeleteAllCmd(cmd));
+            Command<EntityTypeActor.DeleteIf>(cmd => DeleteIfCmd(cmd));
+            Command<DeactivateAfter<EntityTypeActor.DeleteIf>>(cmd => DeleteIfCmd(cmd.Cmd, true));
+            Command<EntityTypeActor.UndeleteById>(cmd => UndeleteByIdCmd(cmd));
+            Command<EntityTypeActor.UndeleteIf>(cmd => UndeleteIfCmd(cmd));
+            Command<DeactivateAfter<EntityTypeActor.UndeleteIf>>(cmd => UndeleteIfCmd(cmd.Cmd, true));
             Command<Deactivate>(cmd => DeactivateCmd(cmd));
 
             // set and handle receive timeout
@@ -222,11 +104,11 @@ namespace Mqb.Akka.Actors
 
         #region Command Handlers
 
-        private void CreateCmd(Create cmd)
+        private void CreateCmd(EntityTypeActor.Create cmd)
         {
             if (cmd.Model == null || cmd.Model.GetType() != State.Type)
             {
-                Sender.Tell(new Create_InvalidType());
+                Sender.Tell(new EntityTypeActor.Create_InvalidType(), Context.Parent);
                 return;
             }
 
@@ -235,39 +117,39 @@ namespace Mqb.Akka.Actors
             PersistAndTrack(created, result =>
             {
                 CreatedEvnt(result);
-                Sender.Tell(new Create_Success(State.Id));
+                Sender.Tell(new EntityTypeActor.Create_Success(State.Id), Context.Parent);
             });
         }
-        private void GetCmd(Get cmd, bool deactivateAfter = false)
+        private void GetByIdCmd(EntityTypeActor.GetById cmd, bool deactivateAfter = false)
         {
-            Sender.Tell(State.Model);
+            Sender.Tell(State.Model, Context.Parent);
 
             if (deactivateAfter)
                 Context.Stop(Self);
         }
 
-        private void GetIfCmd(GetIf cmd, bool deactivateAfter = false)
+        private void GetIfCmd(EntityTypeActor.GetIf cmd, bool deactivateAfter = false)
         {
             if (cmd.Type == null || cmd.Type != State.Type)
             {
-                Sender.Tell(new GetIf_InvalidType());
+                Sender.Tell(new EntityTypeActor.GetIf_InvalidType(), Context.Parent);
                 return;
             }
 
             if (cmd.Predicate(State.Model))
-                Sender.Tell(State.Model);
+                Sender.Tell(State.Model, Context.Parent);
             else
-                Sender.Tell(new GetIf_NoMatch());
+                Sender.Tell(new EntityTypeActor.GetIf_NoMatch(), Context.Parent);
 
             if (deactivateAfter)
                 Context.Stop(Self);
         }
 
-        private void UpdateCmd(Update cmd)
+        private void UpdateCmd(EntityTypeActor.Update cmd)
         {
             if (cmd.Model == null || cmd.Model.GetType() != State.Type)
             {
-                Sender.Tell(new Update_InvalidType());
+                Sender.Tell(new EntityTypeActor.Update_InvalidType(), Context.Parent);
                 return;
             }
 
@@ -276,11 +158,11 @@ namespace Mqb.Akka.Actors
             PersistAndTrack(updated, result =>
             {
                 UpdatedEvnt(result);
-                Sender.Tell(new Update_Success(State.Id));
+                Sender.Tell(new EntityTypeActor.Update_Success(State.Id), Context.Parent);
             });
         }
 
-        private void DeleteCmd(Delete cmd)
+        private void DeleteAllCmd(EntityTypeActor.DeleteById cmd)
         {
             if (!State.Deleted)
             {
@@ -289,18 +171,18 @@ namespace Mqb.Akka.Actors
                 PersistAndTrack(deleted, result =>
                 {
                     DeletedEvnt(result);
-                    Sender.Tell(new Delete_Success(State.Id));
+                    Sender.Tell(new EntityTypeActor.DeleteById_Success(cmd.Id), Context.Parent);
                 });
             }
             else
-                Sender.Tell(new Delete_AlreadyDeleted());
+                Sender.Tell(new EntityTypeActor.DeleteById_IdAlreadyDeleted(), Context.Parent);
         }
 
-        private void DeleteIfCmd(DeleteIf cmd, bool deactivateAfter = false)
+        private void DeleteIfCmd(EntityTypeActor.DeleteIf cmd, bool deactivateAfter = false)
         {
             if (cmd.Type == null || cmd.Type != State.Type)
             {
-                Sender.Tell(new DeleteIf_InvalidType());
+                Sender.Tell(new EntityTypeActor.DeleteIf_InvalidType(), Context.Parent);
                 return;
             }
 
@@ -311,17 +193,17 @@ namespace Mqb.Akka.Actors
                 PersistAndTrack(deleted, result =>
                 {
                     DeletedEvnt(result);
-                    Sender.Tell(new DeleteIf_Success(State.Id));
+                    Sender.Tell(new EntityTypeActor.DeleteIf_ItemSuccess(), Context.Parent);
                 });
             }
             else
-                Sender.Tell(new DeleteIf_NoMatch());
+                Sender.Tell(new EntityTypeActor.DeleteIf_ItemNoMatch(), Context.Parent);
 
             if (deactivateAfter)
                 Context.Stop(Self);
         }
 
-        private void UndeleteCmd(Undelete cmd)
+        private void UndeleteByIdCmd(EntityTypeActor.UndeleteById cmd)
         {
             if (State.Deleted)
             {
@@ -330,18 +212,18 @@ namespace Mqb.Akka.Actors
                 PersistAndTrack(undeleted, result =>
                 {
                     UndeletedEvnt(result);
-                    Sender.Tell(new Undelete_Success(State.Id));
+                    Sender.Tell(new EntityTypeActor.UndeleteById_Success(State.Id), Context.Parent);
                 });
             }
             else
-                Sender.Tell(new Undelete_NotDeleted());
+                Sender.Tell(new EntityTypeActor.UndeleteById_IdNotDeleted(), Context.Parent);
         }
 
-        private void UndeleteIfCmd(UndeleteIf cmd, bool deactivateAfter = false)
+        private void UndeleteIfCmd(EntityTypeActor.UndeleteIf cmd, bool deactivateAfter = false)
         {
             if (cmd.Type == null || cmd.Type != State.Type)
             {
-                Sender.Tell(new UndeleteIf_InvalidType());
+                Sender.Tell(new EntityTypeActor.UndeleteIf_InvalidType(), Context.Parent);
                 return;
             }
 
@@ -352,25 +234,22 @@ namespace Mqb.Akka.Actors
                 PersistAndTrack(undeleted, result =>
                 {
                     UndeletedEvnt(result);
-                    Sender.Tell(new UndeleteIf_Success(State.Id));
+                    Sender.Tell(new EntityTypeActor.UndeleteIf_ItemSuccess(State.Id), Context.Parent);
                 });
             }
             else
-                Sender.Tell(new UndeleteIf_NoMatch());
+                Sender.Tell(new EntityTypeActor.UndeleteIf_ItemNoMatch(), Context.Parent);
 
             if (deactivateAfter)
                 Context.Stop(Self);
         }
         private void DeactivateCmd(Deactivate cmd)
         {
-            if (Sender == Context.Parent)
-                Context.Stop(Self);
-            else
-                Context.Parent.Tell(new EntitySetActor.DeactivatedId(State.Id), Sender);
+            Context.Stop(Self);
         }
         private void ReceiveTimeoutCmd(ReceiveTimeout cmd)
         {
-            Context.Parent.Tell(new EntitySetActor.DeactivatedId(State.Id));
+            Context.Parent.Tell(new EntityTypeActor.DeactivatedId(State.Id));
         }
 
         #endregion
