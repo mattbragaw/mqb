@@ -7,6 +7,11 @@ namespace Mqb.Akka.Actors
 {
     public class EntitiesActor : AutoSnapshotActor<EntitiesActor.EntitiesState>
     {
+        public static string GetName()
+        {
+            return ConstantsDataAkka.ENTITIES;
+        }
+
         #region Command Definitions
 
         public class GetEntityType : Cmd

@@ -16,46 +16,46 @@ namespace Mqb.Akka
         
         #endregion
 
-        #region Registration Methods
+        //#region Registration Methods
 
-        public static void RegisterAkka(this IServiceCollection services, string systemName)
-        {
-            RegisterAkkaSystemSingleton(services, ActorSystem.Create(systemName));
-        }
-        public static void RegisterAkka(this IServiceCollection services, string systemName, Config config)
-        {
-            RegisterAkkaSystemSingleton(services, ActorSystem.Create(systemName, config));
-        }
-        public static void RegisterAkka_SqlPersistence(this IServiceCollection services, string systemName, IConfiguration configuration)
-        {
-            RegisterAkka_SqlPersistence(services, systemName, configuration, "DefaultConnection");
-        }
-        public static void RegisterAkka_SqlPersistence(this IServiceCollection services, string systemName, IConfiguration configuration, string connectionName)
-        {
-            RegisterAkkaSystemSingleton(services, ActorSystem.Create(systemName, GetPersistenceConfig(configuration, connectionName)));
-        }
+        //public static void RegisterAkka(this IServiceCollection services, string systemName)
+        //{
+        //    RegisterAkkaSystemSingleton(services, ActorSystem.Create(systemName));
+        //}
+        //public static void RegisterAkka(this IServiceCollection services, string systemName, Config config)
+        //{
+        //    RegisterAkkaSystemSingleton(services, ActorSystem.Create(systemName, config));
+        //}
+        //public static void RegisterAkka_SqlPersistence(this IServiceCollection services, string systemName, IConfiguration configuration)
+        //{
+        //    RegisterAkka_SqlPersistence(services, systemName, configuration, "DefaultConnection");
+        //}
+        //public static void RegisterAkka_SqlPersistence(this IServiceCollection services, string systemName, IConfiguration configuration, string connectionName)
+        //{
+        //    RegisterAkkaSystemSingleton(services, ActorSystem.Create(systemName, GetPersistenceConfig(configuration, connectionName)));
+        //}
 
-        #endregion
+        //#endregion
 
-        #region Configuration Methods
+        //#region Configuration Methods
 
-        public static Action ConfigureAkka_GetActorSystemShutdownAction(this IServiceProvider serviceProvider)
-        {
-            return Shutdown;
-        }
+        //public static Action ConfigureAkka_GetActorSystemShutdownAction(this IServiceProvider serviceProvider)
+        //{
+        //    return Shutdown;
+        //}
 
-        #endregion
+        //#endregion
 
         #region Utility Methods
 
-        private static Config GetPersistenceConfig(IConfiguration configuration, string connectionName)
-        {
-            var connectionString = configuration.GetConnectionString(connectionName);
+        //private static Config GetPersistenceConfig(IConfiguration configuration, string connectionName)
+        //{
+        //    var connectionString = configuration.GetConnectionString(connectionName);
 
-            connectionString = connectionString.Replace("\\", "\\\\");
+        //    connectionString = connectionString.Replace("\\", "\\\\");
 
-            return ConfigurationFactory.ParseString(string.Concat(GetPersistenceJournalConfig(connectionString), GetPersistenceSnapshotConfig(connectionString)));
-        }
+        //    return ConfigurationFactory.ParseString(string.Concat(GetPersistenceJournalConfig(connectionString), GetPersistenceSnapshotConfig(connectionString)));
+        //}
 
         private static string GetPersistenceJournalConfig(string connectionString)
         {

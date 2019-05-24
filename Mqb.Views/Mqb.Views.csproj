@@ -15,4 +15,9 @@
     <RepositoryType>Github</RepositoryType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Mqb" Version="2.0.2" />
+    <PackageReference Include="Mqb.Data" Version="2.0.1" />
+  </ItemGroup>
+
 </Project>

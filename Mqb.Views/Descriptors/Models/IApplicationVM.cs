@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mqb.Services
+namespace Mqb.Descriptors.Models
 {
-    public class CrudServiceAkka
+    public interface IApplicationVM : IBaseVM
     {
     }
 }

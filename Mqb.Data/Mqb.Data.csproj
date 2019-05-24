@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mqb" Version="2.0.1" />
+    <PackageReference Include="Mqb" Version="2.0.2" />
   </ItemGroup>
 
 </Project>
