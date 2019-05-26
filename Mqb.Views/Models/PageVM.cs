@@ -5,28 +5,13 @@ using System.Text;
 
 namespace Mqb.Models
 {
-    public class PageVM : BaseVM, IPageVM
+    public class PageVM : BaseTitledVM, IPageVM
     {
-        public PageVM(string title)
+        public PageVM(string title) : base(title)
         {
-            Title = title;
         }
-
-        public string Title { get; }
     }
-    public class PageVMMutable : BaseVMMutable, IPageVMMutable
+    public class PageVMMutable : BaseTitledVMMutable, IPageVMMutable
     {
-        private string _title;
-        public virtual string Title
-        {
-            get { return _title; }
-            set
-            {
-                var oldValue = _title;
-                _title = value;
-                
-                OnPropertyChanged(nameof(Title));
-            }
-        }
     }
 }

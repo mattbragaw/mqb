@@ -18,8 +18,12 @@
     <PackageReference Include="Mqb" Version="2.0.2" />
     <PackageReference Include="Mqb.Akka" Version="2.0.5" />
     <PackageReference Include="Mqb.Data" Version="2.0.1" />
-    <PackageReference Include="Mqb.Data.Akka" Version="2.0.1" />
-    <PackageReference Include="Mqb.Views" Version="2.0.0" />
+    <PackageReference Include="Mqb.Data.Akka" Version="2.0.3" />
+    <PackageReference Include="Mqb.Views" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Akka\Actors\" />
   </ItemGroup>
 
 </Project>

@@ -13,15 +13,26 @@ namespace Mqb.Models
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public void OnPropertyChanged(string name)
+        protected virtual void SetAndNotifyIfChanged<TValue>(string name, ref TValue propValue, TValue newValue)
+            where TValue : IEquatable<TValue>
         {
-            OnPropertyChanged(new PropertyChangedEventArgs(name));
+            if (EqualityComparer<TValue>.Default.Equals(propValue, newValue))
+                return;
+
+            var oldValue = propValue;
+            propValue = newValue;
+
+            OnPropertyChanged(name, oldValue, newValue);
         }
-        public void OnPropertyChanged(PropertyChangedEventArgs args)
+        public virtual void OnPropertyChanged(string name, object oldValue, object newValue)
         {
-            OnPropertyChanged(this, args);
+            OnPropertyChanged(new PropertyChangedEventArgs(name), oldValue, newValue);
         }
-        public void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
+        public virtual void OnPropertyChanged(PropertyChangedEventArgs args, object oldValue, object newValue)
+        {
+            OnPropertyChanged(this, args, oldValue, newValue);
+        }
+        public virtual void OnPropertyChanged(object sender, PropertyChangedEventArgs args, object oldValue, object newValue)
         {
             PropertyChanged?.Invoke(sender, args);
         }

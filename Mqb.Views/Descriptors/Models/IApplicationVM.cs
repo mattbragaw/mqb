@@ -4,7 +4,10 @@ using System.Text;
 
 namespace Mqb.Descriptors.Models
 {
-    public interface IApplicationVM : IBaseVM
+    public interface IApplicationVM : IBaseTitledVM
+    {
+    }
+    public interface IApplicationVMMutable : IBaseTitledVMMutable
     {
     }
 }
